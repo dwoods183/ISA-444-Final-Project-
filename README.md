@@ -1,17 +1,48 @@
-Walmart Weekly Sales Forecasting 📈
-ISA 444 Final ProjectAuthors: Daniel Woodward & Olivia Pisano
-📋 Project Overview
-This project focuses on forecasting weekly sales for Walmart stores using a variety of time-series forecasting techniques.
-By leveraging historical sales data and exogenous variables (such as holidays, temperature, fuel price, and CPI), we aimed to predict future sales performance to assist in inventory management and business planning.The project implements a "Tournament" style modeling approach, comparing Statistical Models, Machine Learning Models, Deep Learning Models, and Foundation Models (TimeGPT) to determine the most accurate forecasting method.
-⚠️ Important: Environment Requirements
-This notebook is specifically designed to run in a Linux-based environment, such as Google Colab.Recommended Platform: Google ColabIncompatibility: This code cannot be run locally on Windows (e.g., VS Code) without significant modification.Reasoning: The "Auto" models used in this project (specifically AutoNBEATS and AutoNHITS from the neuralforecast library) utilize the Ray framework for hyperparameter tuning. The specific implementation of Ray and multiprocessing used in this codebase requires a Linux/Unix backend to execute correctly. Running this on a standard Windows backend will result in multiprocessing errors.
-🔐 Security Note: API Key Usage
-You may notice a hardcoded API key for TimeGPT (Nixtla) within the notebook.Context: We understand that hardcoding credentials is generally considered poor security practice.Exception: This key is provided strictly for academic purposes under a temporary, school-based subscription managed by our professor for the ISA 444 course.Validity: The key is transient and will be invalidated/rotated shortly after the grading period. It is included here solely to ensure the code is reproducible for grading.
-🛠️ Tech Stack & Libraries
-This project utilizes the Python ecosystem for time-series analysis, specifically the Nixtla suite of libraries:Data Manipulation: pandas, numpyVisualization: matplotlib, seabornStatistical Models: statsforecast (AutoARIMA, AutoETS, Naive, SeasonalNaive)Machine Learning: mlforecast (LightGBM)Deep Learning: neuralforecast (AutoNBEATS, AutoNHITS)Foundation Models: nixtla (TimeGPT)
-📂 Data Preparation
-The dataset is based on the Walmart Recruiting - Store Sales Forecasting challenge.Data Merging: We merged Sales data with Store metadata and Economic features (CPI, Unemployment, Fuel Price).Preprocessing:Handled missing values in Markdown columns.Interpolated missing economic indicators using forward/backward fill.Created unique identifiers (unique_id) based on Store and Department combinations.Downsampling: To ensure computational efficiency for the final project, we focused on the Top 20 high-volume series based on total sales.
-⚙️ Modeling Pipeline
-We implemented a robust pipeline to train and evaluate models using Cross-Validation (5 windows, 4-week horizon).CategoryModels UsedBaselinesNaive, Seasonal NaiveStatisticalAutoARIMA, AutoETSMachine LearningLightGBM (Gradient Boosting) with lag featuresDeep LearningAutoNBEATS, AutoNHITS (Run on Linux/Colab)GenAI / LLMTimeGPT (via API)📊 Key Findings & ResultsAfter running the evaluation pipeline, we compared the models based on RMSE (Root Mean Squared Error) and MAPE (Mean Absolute Percentage Error).Final Performance MetricsThe AutoNBEATS (Neural Hierarchical Interpolation) model proved to be the superior performer for this dataset.
-ModelMAERMSEMAPEAutoNBEATS (Winner) 🏆7,1079,7825.17%AutoETS7,84510,6625.67%AutoARIMA7,41811,4115.47%AutoNHITS9,42512,8976.77%TimeGPT9,66913,3087.12%LightGBM10,39914,6457.72%SeasonalNaive11,29815,8618.18%Leaderboard (Wins per Series)Out of the 20 distinct store/department series analyzed:AutoNBEATS: Won 9 series.AutoARIMA: Won 4 series.SeasonalNaive: Won 3 series.AutoETS: Won 2 series.AutoNHITS & TimeGPT: Won 1 series each.Visual AnalysisAs seen in the sample forecast for unique_id: 10_72:The Actual Sales (Black line) show significant volatility.AutoNBEATS (Brown line) and AutoARIMA (Red line) tracked the peaks and troughs of the validation set most closely.LightGBM and TimeGPT struggled with some specific seasonal spikes in this subset, leading to higher error rates globally.🧠 Lessons LearnedThrough this project, we learned several key insights regarding Time Series forecasting:Deep Learning Superiority: For high-volume, volatile retail data, Deep Learning models (specifically N-BEATS) outperformed traditional statistical methods and standard machine learning trees.The "No Free Lunch" Theorem: While AutoNBEATS was the global winner, it did not win every series. Simple baselines like SeasonalNaive still performed best on 3 specific series, proving that complex models are not always the answer for every individual trend.Complexity of Foundation Models: Implementing TimeGPT provided insight into using APIs for forecasting. While powerful, it requires careful handling of rate limits and timeouts (as experienced during our initial runs) compared to local models.Feature Importance: The inclusion of exogenous variables (Holidays, CPI) was critical. Models that could effectively ingest these external factors generally performed better during peak holiday weeks.💻 How to Run This CodeDownload the Files: Ensure you have the .ipynb file and the dataset CSVs (train.csv, test.csv, features.csv, stores.csv).Upload to Google Colab: Go to colab.research.google.com and upload the notebook.Upload Data: Upload the CSV files to the Colab session storage.Install Libraries: Run the first cell to install the required Linux-compatible libraries:Python!pip install pandas numpy matplotlib seaborn statsforecast mlforecast neuralforecast lightgbm nixtla
-Run All Cells: Execute the notebook cells in order.
+# Walmart Weekly Sales Forecasting (Time Series Analysis)
+**Authors:** Daniel Woodward & Olivia Pisano
+
+### Project Overview
+This project analyzes and forecasts weekly sales for Walmart stores to identify the most accurate modeling techniques for retail demand planning. By applying a "Tournament" style approach using the Nixtla suite of libraries, this analysis aims to determine which class of models—Statistical, Machine Learning, Deep Learning, or Foundation Models—performs best on high-volatility retail data.
+
+The core of the project involves preprocessing sales data with exogenous variables (CPI, fuel price, temperature), training multiple forecasting models (including AutoNBEATS, LightGBM, and TimeGPT), and evaluating them using rigorous cross-validation metrics like RMSE and MAPE.
+
+### Files in This Repository
+- **ISA_444_Project.ipynb**: The main Jupyter Notebook containing all Python code for data loading, preprocessing, model training, and evaluation.
+- **train.csv / test.csv**: The primary datasets containing historical weekly sales figures.
+- **features.csv / stores.csv**: Supplementary datasets providing exogenous variables (holidays, economic indicators) and store metadata.
+- **final_evaluation_output.csv**: The generated output file containing the detailed cross-validation predictions for all models.
+- **final_metrics_summary.csv**: A summary table ranking models by global accuracy metrics (RMSE, MAE, MAPE).
+- **testing_outputs.csv**: The final future forecasts generated for the testing horizon.
+
+### Methodology
+The analysis was conducted using Python within a Jupyter Notebook, utilizing the Nixtla ecosystem. The key steps are as follows:
+
+1. **Data Loading & Preprocessing**: Sales data was merged with economic indicators. Missing values were interpolated, and the dataset was downsampled to the top 20 high-volume series for computational efficiency.
+2. **Model Training (The Tournament)**: We implemented a diverse set of models:
+    * **Statistical**: Naive, SeasonalNaive, AutoETS, AutoARIMA.
+    * **Machine Learning**: LightGBM (Gradient Boosting) with lag features.
+    * **Deep Learning**: AutoNBEATS and AutoNHITS (Neural Hierarchical Interpolation).
+    * **Foundation Models**: TimeGPT (Generative AI for Time Series).
+3. **Cross-Validation**: Models were evaluated using a rolling window approach (5 windows, 4-week horizon) to simulate real-world forecasting scenarios.
+4. **Evaluation**: We compared models based on Root Mean Squared Error (RMSE) and Mean Absolute Percentage Error (MAPE) to determine the global winner and per-series winners.
+
+### Results
+The analysis identified **AutoNBEATS** (Deep Learning) as the superior model for this dataset, achieving the lowest global RMSE (~9,782) and MAPE (~5.17%). While Deep Learning won the global metrics, simple baselines like SeasonalNaive still performed best on specific individual series, highlighting the importance of model diversity.
+
+### How to Run This Project
+To replicate this analysis, you must use a **Linux-based environment**.
+
+**⚠️ Important Environment Note:**
+This project utilizes "Auto" models (AutoNBEATS/AutoNHITS) from the `neuralforecast` library, which rely on Ray for multiprocessing. **This code cannot be run on VS Code (Windows) or a local Windows machine.** It must be executed in a Linux environment, such as **Google Colab**.
+
+**🔐 Security Note regarding API Keys:**
+You will notice a hardcoded API key for TimeGPT in the notebook. This key is part of a temporary, school-based subscription managed by our professor for the ISA 444 course. It is included strictly for academic grading purposes and will be invalid shortly after the project concludes.
+
+1. **Open in Google Colab**: Upload the `ISA_444_Project.ipynb` file to Google Colab.
+
+2. **Upload Data**: Ensure `train.csv`, `test.csv`, `features.csv`, and `stores.csv` are uploaded to the Colab session storage.
+
+3. **Install Dependencies**: Run the first cell to install the required libraries:
+   - `%pip install pandas numpy matplotlib seaborn statsforecast mlforecast neuralforecast lightgbm nixtla`
+
+4. **Run the Notebook**: Execute the cells in order. The script will preprocess the data, run the training pipeline, and generate the evaluation CSV files in the runtime directory.
